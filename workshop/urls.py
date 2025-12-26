@@ -44,4 +44,12 @@ urlpatterns = [
     path('administration/paciente/create/', views.CreatePacienteView.as_view(), name='create_paciente'),
     path('administration/paciente/<int:cc>/edit/', views.UpdatePacienteAdminView.as_view(), name='update_paciente'),
     path('administration/pacientes/', views.PacienteListView.as_view(), name='list_pacientes'),
+
+    path('administration/medicamento/create/', views.CreateMedicamentoView.as_view(), name='create_medicamento'),
+    path('administration/medicamento/<str:id_medicamento>/edit/', views.UpdateMedicamentoView.as_view(), name='update_medicamento'),
+    path('administration/medicamentos/', views.MedicamentoListView.as_view(), name='list_medicamento'),
+
+    path('administration/exame/create/', views.CreateExameView.as_view(), name='create_exame'),
+    path('administration/exame/<int:pk>/edit/', views.UpdateExameView.as_view(), name='update_exame'),
+    path('administration/exame/', views.ExameListView.as_view(), name='list_exame'),
 ]

@@ -1,19 +1,506 @@
 {% extends 'base.html' %}
-{% block content %}
-<div class="card">
-    <h2>Doctors</h2>
+{% block title %}Doctors List{% endblock %}
 
-    <ul class="list">
-        {% for medico in medicos %}
-            <li>
-                {{ medico.pessoa.nome }}
-                <a class="btn secondary" href="{% url 'update_medico' medico.id %}">
-                    Edit
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Doctors List</h1>
+        <p>Manage all doctors in the system</p>
+        <div class="header-actions">
+            <a href="{% url 'create_medico' %}" class="btn btn-primary">
+                Add New Doctor
+            </a>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats">
+        <div class="stat-item">
+            <h3>{{ medicos.count }}</h3>
+            <p>Total Doctors</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-card">
+        <form method="get" class="search-form">
+            <input type="text" name="search" placeholder="Search doctors by name..." 
+                   value="{{ request.GET.search|default:'' }}">
+            <button type="submit" class="btn-search">Search</button>
+            {% if request.GET.search %}
+            <a href="{% url 'list_medicos' %}" class="btn-clear">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Doctors Table -->
+    <div class="table-card">
+        <div class="table-header">
+            <h3>Doctors List</h3>
+            <div class="table-info">
+                Showing <strong>{{ medicos|length }}</strong> doctors
+            </div>
+        </div>
+        
+        {% if medicos %}
+        <div class="table-responsive">
+            <table class="doctors-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Doctor Name</th>
+                        <th>Specialty</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for medico in medicos %}
+                    <tr>
+                        <td>
+                            <span class="doctor-id">{{ medico.id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ medico.nome }}</strong>
+                        </td>
+                        <td>
+                            {{ medico.especialidade|default:"-" }}
+                        </td>
+                        <td>
+                            {{ medico.email|default:"-" }}
+                        </td>
+                        <td>
+                            {{ medico.telefone|default:"-" }}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'update_medico' medico.cc %}" 
+                                   class="btn-action btn-edit" title="Edit">
+                                    Edit
+                                </a>
+                                <button class="btn-action btn-delete" 
+                                        onclick="confirmDelete('{{ medico.cc }}', '{{ medico.nome }}')"
+                                        title="Delete">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="pagination">
+            <div class="pagination-info">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </div>
+            <div class="pagination-controls">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="btn-pagination">
+                    First
                 </a>
-            </li>
-        {% empty %}
-            <li>No doctors found.</li>
-        {% endfor %}
-    </ul>
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="btn-pagination">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="btn-pagination active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                       class="btn-pagination">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="btn-pagination">
+                    Next
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
+                   class="btn-pagination">
+                    Last
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <h3>No Doctors Found</h3>
+            <p>There are no doctors in the system yet. Add your first doctor!</p>
+            <a href="{% url 'create_medico' %}" class="btn btn-primary">
+                Add First Doctor
+            </a>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<style>
+    /* Container and Layout */
+    .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    /* Header */
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header h1 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    /* Statistics */
+    .stats {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .stat-item {
+        display: inline-block;
+        padding: 20px 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .stat-item h3 {
+        margin: 0;
+        font-size: 36px;
+        color: #4CAF50;
+    }
+
+    .stat-item p {
+        margin: 5px 0 0 0;
+        color: #666;
+    }
+
+    /* Search */
+    .search-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-form input {
+        flex: 1;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+
+    .search-form input:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+
+    .btn-search, .btn-clear {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-search {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-search:hover {
+        background: #45a049;
+    }
+
+    .btn-clear {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-clear:hover {
+        background: #5a6268;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .table-header h3 {
+        margin: 0;
+        color: #333;
+    }
+
+    .table-info {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .doctors-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .doctors-table thead {
+        background: #f8f9fa;
+    }
+
+    .doctors-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .doctors-table td {
+        padding: 15px;
+        border-bottom: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .doctors-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    /* Table Content */
+    .doctor-id {
+        font-family: monospace;
+        color: #666;
+        font-size: 14px;
+        background: #f8f9fa;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+
+    .btn-edit {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: #45a049;
+    }
+
+    .btn-delete {
+        background: #f44336;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background: #d32f2f;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+    }
+
+    .pagination-info {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-pagination {
+        padding: 8px 12px;
+        border: 1px solid #dee2e6;
+        background: white;
+        color: #333;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-pagination:hover {
+        background: #f8f9fa;
+    }
+
+    .btn-pagination.active {
+        background: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 15px 0;
+        color: #333;
+    }
+
+    .empty-state p {
+        margin: 0 0 25px 0;
+        color: #666;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #45a049;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px;
+        }
+        
+        .header-actions {
+            flex-direction: column;
+        }
+        
+        .search-form {
+            flex-direction: column;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .pagination {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .pagination-controls {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    function confirmDelete(cc, name) {
+        if (confirm(`Are you sure you want to delete Dr. ${name}?\n\nThis action cannot be undone.`)) {
+            window.location.href = `/medico/${cc}/delete/`;
+        }
+    }
+    
+    // Auto-submit search on Enter
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-form input');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    this.form.submit();
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

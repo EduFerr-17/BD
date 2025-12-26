@@ -19,4 +19,21 @@
         <a class="btn secondary" href="{% url 'list_pacientes' %}">Update Patient</a>
     </div>
 </div>
+
+<div class="card">
+    <h3>Medication</h3>
+    <div class="button-group">
+        <a class="btn" href="{% url 'create_medicamento' %}">Create Medication</a>
+        <a class="btn secondary" href="{% url 'list_medicamento' %}">Update Medication</a>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Exam</h3>
+    <div class="button-group">
+        <a class="btn" href="{% url 'create_exame' %}">Create Exam</a>
+        <a class="btn secondary" href="{% url 'list_exame' %}">Update Exam</a>
+    </div>
+</div>
+
 {% endblock %}

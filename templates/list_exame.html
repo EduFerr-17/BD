@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Patients List{% endblock %}
+{% block title %}Exams List{% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <h1>Patients List</h1>
-        <p>Manage all patients in the system</p>
+        <h1>Exams Catalog</h1>
+        <p>Manage all exam types in the system</p>
         <div class="header-actions">
-            <a href="{% url 'create_paciente' %}" class="btn btn-primary">
-                Add New Patient
+            <a href="{% url 'create_exame' %}" class="btn btn-primary">
+                Add New Exam
             </a>
             <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
                 Back to Dashboard
@@ -20,76 +20,59 @@
     <!-- Statistics -->
     <div class="stats">
         <div class="stat-item">
-            <h3>{{ pacientes.count }}</h3>
-            <p>Total Patients</p>
+            <h3>{{ exame.count }}</h3>
+            <p>Total Exams</p>
         </div>
     </div>
 
     <!-- Search -->
     <div class="search-card">
         <form method="get" class="search-form">
-            <input type="text" name="search" placeholder="Search patients by name or ID..." 
+            <input type="text" name="search" placeholder="Search exams by name..." 
                    value="{{ request.GET.search|default:'' }}">
             <button type="submit" class="btn-search">Search</button>
             {% if request.GET.search %}
-            <a href="{% url 'list_pacientes' %}" class="btn-clear">Clear</a>
+            <a href="{% url 'list_exame' %}" class="btn-clear">Clear</a>
             {% endif %}
         </form>
     </div>
 
-    <!-- Patients Table -->
+    <!-- Exams Table -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Patients List</h3>
+            <h3>Exams List</h3>
             <div class="table-info">
-                Showing <strong>{{ pacientes|length }}</strong> patients
+                Showing <strong>{{ exame|length }}</strong> exams
             </div>
         </div>
         
-        {% if pacientes %}
+        {% if exame %}
         <div class="table-responsive">
-            <table class="patients-table">
+            <table class="exams-table">
                 <thead>
                     <tr>
-                        <th>Citizen Card</th>
-                        <th>Patient Name</th>
-                        <th>Date of Birth</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+                        <th>ID</th>
+                        <th>Exam Name</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for paciente in pacientes %}
+                    {% for exam in exame %}
                     <tr>
                         <td>
-                            <span class="patient-id">{{ paciente.cc }}</span>
+                            <span class="exam-id">{{ exam.id_exame }}</span>
                         </td>
                         <td>
-                            <strong>{{ paciente.nome }}</strong>
-                        </td>
-                        <td>
-                            {{ paciente.data_nascimento|date:"Y-m-d"|default:"-" }}
-                        </td>
-                        <td>
-                            {{ paciente.email|default:"-" }}
-                        </td>
-                        <td>
-                            {{ paciente.telefone|default:"-" }}
+                            <strong>{{ exam.nome }}</strong>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{% url 'update_paciente' paciente.cc %}" 
-                                   class="btn-action btn-edit" title="Edit">
+                                <a href="{% url 'update_exame' exam.id %}" 
+                                   class="btn-action btn-edit">
                                     Edit
                                 </a>
-                                <a href="{% url 'patient_dashboard' %}?patient_cc={{ paciente.cc }}" 
-                                   class="btn-action btn-view" title="View Dashboard">
-                                    View
-                                </a>
                                 <button class="btn-action btn-delete" 
-                                        onclick="confirmDelete('{{ paciente.cc }}', '{{ paciente.nome }}')"
-                                        title="Delete">
+                                        onclick="confirmDelete('{{ exam.id }}', '{{ exam.nome }}')">
                                     Delete
                                 </button>
                             </div>
@@ -99,55 +82,14 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Pagination -->
-        {% if is_paginated %}
-        <div class="pagination">
-            <div class="pagination-info">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </div>
-            <div class="pagination-controls">
-                {% if page_obj.has_previous %}
-                <a href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-                   class="btn-pagination">
-                    First
-                </a>
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-                   class="btn-pagination">
-                    Previous
-                </a>
-                {% endif %}
-                
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                    <span class="btn-pagination active">{{ num }}</span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                    <a href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-                       class="btn-pagination">{{ num }}</a>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-                   class="btn-pagination">
-                    Next
-                </a>
-                <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" 
-                   class="btn-pagination">
-                    Last
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
         
         {% else %}
         <!-- Empty State -->
         <div class="empty-state">
-            <h3>No Patients Found</h3>
-            <p>There are no patients in the system yet. Add your first patient!</p>
-            <a href="{% url 'create_paciente' %}" class="btn btn-primary">
-                Add First Patient
+            <h3>No Exams Found</h3>
+            <p>There are no exams in the system yet. Add your first exam!</p>
+            <a href="{% url 'create_exame' %}" class="btn btn-primary">
+                Add First Exam
             </a>
         </div>
         {% endif %}
@@ -157,7 +99,7 @@
 <style>
     /* Container and Layout */
     .container {
-        max-width: 1200px;
+        max-width: 800px;
         margin: 40px auto;
         padding: 20px;
     }
@@ -297,16 +239,16 @@
         overflow-x: auto;
     }
 
-    .patients-table {
+    .exams-table {
         width: 100%;
         border-collapse: collapse;
     }
 
-    .patients-table thead {
+    .exams-table thead {
         background: #f8f9fa;
     }
 
-    .patients-table th {
+    .exams-table th {
         padding: 15px;
         text-align: left;
         font-weight: 600;
@@ -314,18 +256,18 @@
         border-bottom: 2px solid #dee2e6;
     }
 
-    .patients-table td {
+    .exams-table td {
         padding: 15px;
         border-bottom: 1px solid #dee2e6;
         vertical-align: middle;
     }
 
-    .patients-table tbody tr:hover {
+    .exams-table tbody tr:hover {
         background-color: #f8f9fa;
     }
 
     /* Table Content */
-    .patient-id {
+    .exam-id {
         font-family: monospace;
         color: #666;
         font-size: 14px;
@@ -359,15 +301,6 @@
         background: #45a049;
     }
 
-    .btn-view {
-        background: #2196F3;
-        color: white;
-    }
-
-    .btn-view:hover {
-        background: #0b7dda;
-    }
-
     .btn-delete {
         background: #f44336;
         color: white;
@@ -375,47 +308,6 @@
 
     .btn-delete:hover {
         background: #d32f2f;
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-top: 1px solid #e9ecef;
-        background: #f8f9fa;
-    }
-
-    .pagination-info {
-        color: #666;
-        font-size: 14px;
-    }
-
-    .pagination-controls {
-        display: flex;
-        gap: 5px;
-    }
-
-    .btn-pagination {
-        padding: 8px 12px;
-        border: 1px solid #dee2e6;
-        background: white;
-        color: #333;
-        text-decoration: none;
-        border-radius: 4px;
-        font-size: 14px;
-        transition: all 0.2s;
-    }
-
-    .btn-pagination:hover {
-        background: #f8f9fa;
-    }
-
-    .btn-pagination.active {
-        background: #4CAF50;
-        color: white;
-        border-color: #4CAF50;
     }
 
     /* Empty State */
@@ -485,22 +377,18 @@
             flex-direction: column;
         }
         
-        .pagination {
+        .table-header {
             flex-direction: column;
             gap: 15px;
-        }
-        
-        .pagination-controls {
-            flex-wrap: wrap;
-            justify-content: center;
+            text-align: center;
         }
     }
 </style>
 
 <script>
-    function confirmDelete(cc, name) {
-        if (confirm(`Are you sure you want to delete patient ${name}?\n\nThis action cannot be undone.`)) {
-            window.location.href = `/paciente/${cc}/delete/`;
+    function confirmDelete(id, name) {
+        if (confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone.`)) {
+            window.location.href = `/administration/exame/${id}/delete/`;
         }
     }
     

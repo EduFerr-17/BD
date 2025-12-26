@@ -3,11 +3,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, TemplateView, CreateView
 from django.views import View
 from django.urls import reverse_lazy
-from .models import Paciente, Medico, Consulta, Medicacao, ItemMedicacao, Exames, ItemExames
+from .models import Paciente, Medico, Consulta, Medicacao, ItemMedicacao, Exames, ItemExames, Medicamento, Exame
 from .forms import (
     MedicacaoForm, ItemMedicacaoFormSet,
     ExamesForm, ItemExamesFormSet,
-    ConsultaForm, MedicoForm, PacienteForm
+    ConsultaForm, MedicoForm, PacienteForm, MedicamentoForm, ExameForm
 )
 
 # -------------------------------
@@ -210,7 +210,7 @@ class UpdateMedicacaoView(View):
 # Exames Views
 # -------------------------------
 class CreateExameView(View):
-    template_name = 'create_exame.html'
+    template_name = 'create_exames.html'
 
     def get(self, request):
         form = ExamesForm()
@@ -240,7 +240,7 @@ class CreateExameView(View):
 
 
 class UpdateExameView(View):
-    template_name = 'update_exame.html'
+    template_name = 'update_exames.html'
 
     def get(self, request, pk):
         exame_obj = get_object_or_404(Exames, pk=pk)
@@ -327,6 +327,35 @@ class UpdatePacienteAdminView(UpdateView):
     context_object_name = 'paciente'
 
 
+class CreateMedicamentoView(CreateView):
+    model = Medicamento
+    form_class = MedicamentoForm
+    template_name = 'create_medicamento.html'
+    success_url = reverse_lazy('admin_dashboard')
+
+class UpdateMedicamentoView(UpdateView):
+    model = Medicamento
+    form_class = MedicamentoForm
+    template_name = 'update_medicamento.html'
+    pk_url_kwarg = 'id_medicamento'
+    success_url = reverse_lazy('admin_dashboard')
+    context_object_name = 'medicamento'
+
+class CreateExameView(CreateView):
+    model = Exame
+    form_class = ExameForm
+    template_name = 'create_exame.html'
+    success_url = reverse_lazy('admin_dashboard')
+
+class UpdateExameView(UpdateView):
+    model = Exame
+    form_class = ExameForm
+    template_name = 'update_exame.html'
+    pk_url_kwarg = 'pk'
+    success_url = reverse_lazy('admin_dashboard')
+    context_object_name = 'exame'
+
+
 class MedicoListView(ListView):
     model = Medico
     template_name = 'list_medicos.html'
@@ -337,3 +366,14 @@ class PacienteListView(ListView):
     model = Paciente
     template_name = 'list_pacientes.html'
     context_object_name = 'pacientes'
+
+
+class MedicamentoListView(ListView):
+    model = Medicamento
+    template_name = 'list_medicamentos.html'
+    context_object_name = 'medicamentos'
+
+class ExameListView(ListView):
+    model = Exame
+    template_name = 'list_exame.html'
+    context_object_name = 'exame'

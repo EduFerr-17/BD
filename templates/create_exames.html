@@ -1,0 +1,105 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Criar Prescrição de Exames</title>
+    <style>
+        .formset-form {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .delete-checkbox {
+            margin-top: 10px;
+        }
+        .add-form-btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .submit-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Criar Nova Prescrição de Exames</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Informação da Prescrição</h2>
+        {{ form.as_p }}
+        
+        <h2>Exames</h2>
+        {{ formset.management_form }}
+        
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="formset-form">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <button type="button" class="add-form-btn" id="add-form">
+            + Adicionar Exame
+        </button>
+        
+        <br>
+        <button type="submit" class="submit-btn">Criar Prescrição</button>
+        <a href="{% url 'doctor_dashboard' %}">Cancelar</a>
+    </form>
+
+    <script>
+        // Dynamic formset addition
+        document.getElementById('add-form').addEventListener('click', function() {
+            const formsetContainer = document.getElementById('formset-container');
+            const totalForms = document.getElementById('id_itemexames_set-TOTAL_FORMS');
+            const currentFormCount = parseInt(totalForms.value);
+            
+            // Get the last form
+            const lastForm = formsetContainer.lastElementChild;
+            
+            // Clone it
+            const newForm = lastForm.cloneNode(true);
+            
+            // Update form index in all fields
+            const formRegex = RegExp(`itemexames_set-(\\d+)-`, 'g');
+            newForm.innerHTML = newForm.innerHTML.replace(
+                formRegex, 
+                `itemexames_set-${currentFormCount}-`
+            );
+            
+            // Clear values in cloned form
+            newForm.querySelectorAll('input, select, textarea').forEach(field => {
+                if (field.type === 'checkbox') {
+                    field.checked = false;
+                } else if (!field.name.includes('TOTAL_FORMS') && 
+                           !field.name.includes('INITIAL_FORMS') && 
+                           !field.name.includes('MIN_NUM_FORMS') && 
+                           !field.name.includes('MAX_NUM_FORMS')) {
+                    field.value = '';
+                }
+            });
+            
+            // Append to container
+            formsetContainer.appendChild(newForm);
+            
+            // Increment total forms count
+            totalForms.value = currentFormCount + 1;
+        });
+    </script>
+</body>
+</html>

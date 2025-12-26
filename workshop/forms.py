@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.forms.models import inlineformset_factory
 from .models import (
     Medico, Paciente, Consulta, Receita, Medicacao, ItemMedicacao,
-    Exames, ItemExames
+    Exames, ItemExames, Medicamento, Exame
 )
 
 # -------------------------------
@@ -33,6 +33,20 @@ class PacienteForm(forms.ModelForm):
             'data_nascimento': forms.DateInput(attrs={'type': 'date'}),
         }
 
+class MedicamentoForm(forms.ModelForm):
+    class Meta:
+        model = Medicamento
+        fields = [
+            'id_medicamento', 'nome', 
+        ]
+
+class ExameForm(forms.ModelForm):
+    class Meta:
+        model = Exame
+        fields = [
+            'id_exame', 'nome', 
+        ]
+       
 
 class ConsultaForm(forms.ModelForm):
     class Meta:

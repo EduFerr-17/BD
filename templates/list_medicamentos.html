@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
-{% block title %}Patients List{% endblock %}
+{% block title %}Medications List{% endblock %}
 
 {% block content %}
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <h1>Patients List</h1>
-        <p>Manage all patients in the system</p>
+        <h1>Medications Catalog</h1>
+        <p>Manage all medications in the system</p>
         <div class="header-actions">
-            <a href="{% url 'create_paciente' %}" class="btn btn-primary">
-                Add New Patient
+            <a href="{% url 'create_medicamento' %}" class="btn btn-primary">
+                Add New Medication
             </a>
             <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
                 Back to Dashboard
@@ -20,75 +20,59 @@
     <!-- Statistics -->
     <div class="stats">
         <div class="stat-item">
-            <h3>{{ pacientes.count }}</h3>
-            <p>Total Patients</p>
+            <h3>{{ medicamentos.count }}</h3>
+            <p>Total Medications</p>
         </div>
     </div>
 
     <!-- Search -->
     <div class="search-card">
         <form method="get" class="search-form">
-            <input type="text" name="search" placeholder="Search patients by name or ID..." 
+            <input type="text" name="search" placeholder="Search medications by name..." 
                    value="{{ request.GET.search|default:'' }}">
             <button type="submit" class="btn-search">Search</button>
             {% if request.GET.search %}
-            <a href="{% url 'list_pacientes' %}" class="btn-clear">Clear</a>
+            <a href="{% url 'list_medicamentos' %}" class="btn-clear">Clear</a>
             {% endif %}
         </form>
     </div>
 
-    <!-- Patients Table -->
+    <!-- Medications Table -->
     <div class="table-card">
         <div class="table-header">
-            <h3>Patients List</h3>
+            <h3>Medications List</h3>
             <div class="table-info">
-                Showing <strong>{{ pacientes|length }}</strong> patients
+                Showing <strong>{{ medicamentos|length }}</strong> medications
             </div>
         </div>
         
-        {% if pacientes %}
+        {% if medicamentos %}
         <div class="table-responsive">
-            <table class="patients-table">
+            <table class="medications-table">
                 <thead>
                     <tr>
-                        <th>Citizen Card</th>
-                        <th>Patient Name</th>
-                        <th>Date of Birth</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+                        <th>ID</th>
+                        <th>Medication Name</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for paciente in pacientes %}
+                    {% for medicamento in medicamentos %}
                     <tr>
                         <td>
-                            <span class="patient-id">{{ paciente.cc }}</span>
+                            <span class="med-id">{{ medicamento.id_medicamento }}</span>
                         </td>
                         <td>
-                            <strong>{{ paciente.nome }}</strong>
-                        </td>
-                        <td>
-                            {{ paciente.data_nascimento|date:"Y-m-d"|default:"-" }}
-                        </td>
-                        <td>
-                            {{ paciente.email|default:"-" }}
-                        </td>
-                        <td>
-                            {{ paciente.telefone|default:"-" }}
+                            <strong>{{ medicamento.nome }}</strong>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{% url 'update_paciente' paciente.cc %}" 
+                                <a href="{% url 'update_medicamento' medicamento.id_medicamento %}" 
                                    class="btn-action btn-edit" title="Edit">
                                     Edit
                                 </a>
-                                <a href="{% url 'patient_dashboard' %}?patient_cc={{ paciente.cc }}" 
-                                   class="btn-action btn-view" title="View Dashboard">
-                                    View
-                                </a>
                                 <button class="btn-action btn-delete" 
-                                        onclick="confirmDelete('{{ paciente.cc }}', '{{ paciente.nome }}')"
+                                        onclick="confirmDelete('{{ medicamento.id_medicamento }}', '{{ medicamento.nome }}')"
                                         title="Delete">
                                     Delete
                                 </button>
@@ -144,10 +128,10 @@
         {% else %}
         <!-- Empty State -->
         <div class="empty-state">
-            <h3>No Patients Found</h3>
-            <p>There are no patients in the system yet. Add your first patient!</p>
-            <a href="{% url 'create_paciente' %}" class="btn btn-primary">
-                Add First Patient
+            <h3>No Medications Found</h3>
+            <p>There are no medications in the system yet. Add your first medication!</p>
+            <a href="{% url 'create_medicamento' %}" class="btn btn-primary">
+                Add First Medication
             </a>
         </div>
         {% endif %}
@@ -157,7 +141,7 @@
 <style>
     /* Container and Layout */
     .container {
-        max-width: 1200px;
+        max-width: 800px;
         margin: 40px auto;
         padding: 20px;
     }
@@ -297,16 +281,16 @@
         overflow-x: auto;
     }
 
-    .patients-table {
+    .medications-table {
         width: 100%;
         border-collapse: collapse;
     }
 
-    .patients-table thead {
+    .medications-table thead {
         background: #f8f9fa;
     }
 
-    .patients-table th {
+    .medications-table th {
         padding: 15px;
         text-align: left;
         font-weight: 600;
@@ -314,18 +298,18 @@
         border-bottom: 2px solid #dee2e6;
     }
 
-    .patients-table td {
+    .medications-table td {
         padding: 15px;
         border-bottom: 1px solid #dee2e6;
         vertical-align: middle;
     }
 
-    .patients-table tbody tr:hover {
+    .medications-table tbody tr:hover {
         background-color: #f8f9fa;
     }
 
     /* Table Content */
-    .patient-id {
+    .med-id {
         font-family: monospace;
         color: #666;
         font-size: 14px;
@@ -357,15 +341,6 @@
 
     .btn-edit:hover {
         background: #45a049;
-    }
-
-    .btn-view {
-        background: #2196F3;
-        color: white;
-    }
-
-    .btn-view:hover {
-        background: #0b7dda;
     }
 
     .btn-delete {
@@ -498,9 +473,10 @@
 </style>
 
 <script>
-    function confirmDelete(cc, name) {
-        if (confirm(`Are you sure you want to delete patient ${name}?\n\nThis action cannot be undone.`)) {
-            window.location.href = `/paciente/${cc}/delete/`;
+    function confirmDelete(id, name) {
+        if (confirm(`Are you sure you want to delete "${name}"?\n\nThis action cannot be undone.`)) {
+            // Redirect to delete URL - you need to create this view
+            window.location.href = `/medicamento/${id}/delete/`;
         }
     }
     

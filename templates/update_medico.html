@@ -1,15 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}Create Exam{% endblock %}
+{% block title %}Update Doctor{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="header">
-        <h1>Create New Exam</h1>
-        <p>Add a new exam type to the system</p>
+        <h1>Update Doctor</h1>
+        <p>Edit doctor information for: <strong>{{ medico.nome }}</strong></p>
+        <div class="doctor-id">
+            <span class="badge">CC: {{ medico.cc }}</span>
+            <span class="badge">{{ medico.especialidade|default:"General" }}</span>
+        </div>
     </div>
 
     <div class="card">
-        <form method="post" class="exam-form">
+        <form method="post" class="doctor-form">
             {% csrf_token %}
             
             {% if form.errors %}
@@ -28,21 +32,22 @@
             </div>
             {% endif %}
             
+            {% for field in form %}
             <div class="form-group">
-                <label for="{{ form.id_exame.id_for_label }}">Exam ID *</label>
-                {{ form.id_exame }}
-                <small class="form-text">Unique identifier for the exam (e.g., EX-001, LAB-01)</small>
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                <span class="form-text">{{ field.help_text }}</span>
+                {% endif %}
             </div>
-
-            <div class="form-group">
-                <label for="{{ form.nome.id_for_label }}">Exam Name *</label>
-                {{ form.nome }}
-                <small class="form-text">Enter the name of the exam (e.g., Blood Test, X-Ray, MRI)</small>
-            </div>
+            {% endfor %}
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save Exam</button>
-                <a href="{% url 'list_exame' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a href="{% url 'list_medicos' %}" class="btn btn-secondary">Cancel</a>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ medico.cc }}', 'Dr. {{ medico.nome }}')">
+                    Delete
+                </button>
             </div>
         </form>
     </div>
@@ -67,6 +72,22 @@
 
     .header p {
         color: #666;
+        margin-bottom: 15px;
+    }
+
+    .doctor-id {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .badge {
+        background: #4CAF50;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
     }
 
     .card {
@@ -173,6 +194,15 @@
         background: #5a6268;
     }
 
+    .btn-danger {
+        background: #f44336;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #d32f2f;
+    }
+
     @media (max-width: 768px) {
         .container {
             padding: 15px;
@@ -189,22 +219,10 @@
 </style>
 
 <script>
-    // Auto-format exam ID to uppercase
-    document.addEventListener('DOMContentLoaded', function() {
-        const idField = document.getElementById('id_id_exame');
-        if (idField) {
-            idField.addEventListener('blur', function() {
-                this.value = this.value.toUpperCase();
-            });
+    function confirmDelete(cc, name) {
+        if (confirm(`Are you sure you want to delete ${name}?\n\nThis action cannot be undone.`)) {
+            window.location.href = `/medico/${cc}/delete/`;
         }
-        
-        // Auto-capitalize exam names
-        const nomeField = document.getElementById('id_nome');
-        if (nomeField) {
-            nomeField.addEventListener('blur', function() {
-                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
-            });
-        }
-    });
+    }
 </script>
 {% endblock %}
