@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Patients{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Patients List</h2>
+
+    <ul class="list">
+        {% for paciente in pacientes %}
+            <li>
+                {{ paciente.nome }} ({{ paciente.cc }})
+                <a class="btn secondary" href="{% url 'update_paciente' paciente.cc %}">Edit</a>
+            </li>
+        {% empty %}
+            <li>No patients found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

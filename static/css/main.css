@@ -89,3 +89,31 @@ h2, h3 {
     background: #e9ecef;
     margin-top: 2rem;
 }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dashboard-card {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+}
+
+.dashboard-card h3 {
+    margin-top: 0;
+    color: #0d6efd;
+}
+
+.dashboard-card.admin h3 {
+    color: #dc3545;
+}
+
+.btn.danger {
+    background-color: #dc3545;
+}

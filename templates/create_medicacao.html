@@ -1,22 +1,28 @@
 {% extends 'base.html' %}
-{% block title %}Create Medication{% endblock %}
+{% block title %}Create Medicacao{% endblock %}
 
 {% block content %}
 <div class="card">
-    <h2>Prescribe Medication</h2>
-
-    <p class="info-text">
-        Select the patient and specify the medication details.
-    </p>
-
+    <h2>Create Medicacao</h2>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
 
-        <div class="button-group">
-            <button class="btn" type="submit">Save Medication</button>
-            <a class="btn secondary" href="{% url 'doctor_dashboard' %}">Cancel</a>
-        </div>
+        <h3>Medicines</h3>
+        {{ formset.management_form }}
+        {% for item_form in formset %}
+            <div class="formset-item">
+                {{ item_form.medicamente.label_tag }} {{ item_form.medicamento }}
+                {{ item_form.dose.label_tag }} {{ item_form.dose }}
+                {{ item_form.quantidade.label_tag }} {{ item_form.quantidade }}
+                {% if item_form.DELETE %}
+                    {{ item_form.DELETE.label_tag }} {{ item_form.DELETE }}
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn">Save</button>
+        <a class="btn secondary" href="{% url 'doctor_dashboard' %}">Cancel</a>
     </form>
 </div>
 {% endblock %}
