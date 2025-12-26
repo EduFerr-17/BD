@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Exams{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>My Exams</h2>
+
+    <ul class="list">
+        {% for exame in exames %}
+            <li>{{ exame }}</li>
+        {% empty %}
+            <li>No exams available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

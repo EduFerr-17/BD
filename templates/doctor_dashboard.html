@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<h2>Doctor Dashboard</h2>
+
+<section class="card">
+    <h3>Patients</h3>
+    <ul class="list">
+        {% for paciente in pacientes %}
+            <li>{{ paciente }}</li>
+        {% empty %}
+            <li>No patients registered.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<div class="button-group">
+    <a class="btn" href="{% url 'schedule_consulta' %}">Schedule Consultation</a>
+    <a class="btn secondary" href="{% url 'create_medicacao' %}">Add Medication</a>
+</div>
+{% endblock %}

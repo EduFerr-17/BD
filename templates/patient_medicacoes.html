@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Medications{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>My Medications</h2>
+
+    <ul class="list">
+        {% for medicacao in medicacoes %}
+            <li>{{ medicacao }}</li>
+        {% empty %}
+            <li>No medications available.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

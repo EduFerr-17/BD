@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Health App{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+
+<header class="navbar">
+    <h1 class="logo">HealthCare System</h1>
+    <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'patient_dashboard' %}">Patient</a>
+        <a href="{% url 'doctor_dashboard' %}">Doctor</a>
+    </nav>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <p>&copy; 2025 HealthCare App</p>
+</footer>
+
+</body>
+</html>

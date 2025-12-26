@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<h2>Patient Dashboard</h2>
+
+<section class="card">
+    <h3>Consultations</h3>
+    <ul class="list">
+        {% for consulta in consultas %}
+            <li>
+                <a href="{% url 'consulta_detail' consulta.id %}">
+                    {{ consulta.data_hora }} – {{ consulta.motivo }}
+                </a>
+            </li>
+        {% empty %}
+            <li>No consultations found.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="card">
+    <h3>Medications</h3>
+    <ul class="list">
+        {% for med in medicacoes %}
+            <li>{{ med }}</li>
+        {% empty %}
+            <li>No medications.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="card">
+    <h3>Exams</h3>
+    <ul class="list">
+        {% for exame in exames %}
+            <li>{{ exame }}</li>
+        {% empty %}
+            <li>No exams.</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Welcome</h2>
+    <p>Select your dashboard:</p>
+
+    <div class="button-group">
+        <a class="btn" href="{% url 'patient_dashboard' %}">Patient Dashboard</a>
+        <a class="btn secondary" href="{% url 'doctor_dashboard' %}">Doctor Dashboard</a>
+    </div>
+</div>
+{% endblock %}

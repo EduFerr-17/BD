@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Consultation Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Consultation Details</h2>
+
+    <p><strong>Date:</strong> {{ object.data_hora }}</p>
+    <p><strong>Reason:</strong> {{ object.motivo }}</p>
+    <p><strong>Patient:</strong> {{ object.paciente }}</p>
+
+    <a class="btn secondary" href="{% url 'patient_dashboard' %}">Back</a>
+</div>
+{% endblock %}
