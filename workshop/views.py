@@ -84,20 +84,29 @@ class CreateMedicacaoView(View):
 
     def get(self, request):
         form = MedicacaoForm()
-        formset = ItemMedicacaoFormSet()
-        return render(request, self.template_name, {'form': form, 'formset': formset})
+        formset = ItemMedicacaoFormSet(queryset=ItemMedicacao.objects.none())
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset
+        })
 
     def post(self, request):
         form = MedicacaoForm(request.POST)
         formset = ItemMedicacaoFormSet(request.POST)
+        
         if form.is_valid() and formset.is_valid():
             medicacao = form.save()
             items = formset.save(commit=False)
             for item in items:
                 item.medicacao = medicacao
                 item.save()
+            formset.save_m2m()  # Save many-to-many relationships
             return redirect('doctor_dashboard')
-        return render(request, self.template_name, {'form': form, 'formset': formset})
+        
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset
+        })
 
 
 class UpdateMedicacaoView(View):
@@ -107,17 +116,27 @@ class UpdateMedicacaoView(View):
         medicacao = get_object_or_404(Medicacao, pk=pk)
         form = MedicacaoForm(instance=medicacao)
         formset = ItemMedicacaoFormSet(instance=medicacao)
-        return render(request, self.template_name, {'form': form, 'formset': formset, 'medicacao': medicacao})
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset, 
+            'medicacao': medicacao
+        })
 
     def post(self, request, pk):
         medicacao = get_object_or_404(Medicacao, pk=pk)
         form = MedicacaoForm(request.POST, instance=medicacao)
         formset = ItemMedicacaoFormSet(request.POST, instance=medicacao)
+        
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save()
             return redirect('doctor_dashboard')
-        return render(request, self.template_name, {'form': form, 'formset': formset, 'medicacao': medicacao})
+        
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset, 
+            'medicacao': medicacao
+        })
 
 
 # -------------------------------
@@ -128,20 +147,59 @@ class CreateExameView(View):
 
     def get(self, request):
         form = ExamesForm()
-        formset = ItemExamesFormSet()
-        return render(request, self.template_name, {'form': form, 'formset': formset})
+        formset = ItemExamesFormSet(queryset=ItemExames.objects.none())
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset
+        })
 
     def post(self, request):
         form = ExamesForm(request.POST)
         formset = ItemExamesFormSet(request.POST)
+        
         if form.is_valid() and formset.is_valid():
             exames = form.save()
             items = formset.save(commit=False)
             for item in items:
                 item.exames = exames
                 item.save()
+            formset.save_m2m()
             return redirect('doctor_dashboard')
-        return render(request, self.template_name, {'form': form, 'formset': formset})
+        
+        return render(request, self.template_name, {
+            'form': form, 
+            'formset': formset
+        })
+
+
+class UpdateExameView(View):
+    template_name = 'update_exame.html'
+
+    def get(self, request, pk):
+        exame_obj = get_object_or_404(Exames, pk=pk)
+        form = ExamesForm(instance=exame_obj)
+        formset = ItemExamesFormSet(instance=exame_obj)
+        return render(request, self.template_name, {
+            'form': form,
+            'formset': formset,
+            'exame_obj': exame_obj
+        })
+
+    def post(self, request, pk):
+        exame_obj = get_object_or_404(Exames, pk=pk)
+        form = ExamesForm(request.POST, instance=exame_obj)
+        formset = ItemExamesFormSet(request.POST, instance=exame_obj)
+        
+        if form.is_valid() and formset.is_valid():
+            form.save()
+            formset.save()
+            return redirect('doctor_dashboard')
+        
+        return render(request, self.template_name, {
+            'form': form,
+            'formset': formset,
+            'exame_obj': exame_obj
+        })
 
 
 class UpdateExameResultsView(UpdateView):

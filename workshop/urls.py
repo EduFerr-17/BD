@@ -23,6 +23,7 @@ urlpatterns = [
     path('consulta/<int:pk>/edit/', views.UpdateConsultaView.as_view(), name='update_consulta'),
 
     path('exame/new/', views.CreateExameView.as_view(), name='create_exame'),
+    path('exame/<int:pk>/edit/', views.UpdateExameView.as_view(), name='update_exame'),
     path('exame/item/<int:pk>/edit/', views.UpdateExameResultsView.as_view(), name='update_exame_results'),
 
     path('medicacao/new/', views.CreateMedicacaoView.as_view(), name='create_medicacao'),

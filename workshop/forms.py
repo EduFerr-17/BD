@@ -78,8 +78,10 @@ ItemMedicacaoFormSet = inlineformset_factory(
     Medicacao,
     ItemMedicacao,
     form=ItemMedicacaoForm,
-    extra=1,
-    can_delete=True
+    extra=3,  # Show 3 empty forms by default
+    can_delete=True,
+    min_num=1,  # Require at least 1 medication
+    validate_min=True
 )
 
 
@@ -110,6 +112,11 @@ ItemExamesFormSet = inlineformset_factory(
     Exames,
     ItemExames,
     form=ItemExamesForm,
-    extra=1,
-    can_delete=True
+    extra=3,  # Show 3 empty forms by default
+    can_delete=True,
+    min_num=1,  # Require at least 1 exam
+    validate_min=True
 )
+
+
+
