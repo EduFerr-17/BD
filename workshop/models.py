@@ -18,30 +18,37 @@ class Medico(Pessoa):
     numero_medico = models.BigIntegerField(unique=True)
     especialidade = models.CharField(max_length=100)
 
-    def __str__(self):
-
-        return f"Dr. {self.nome} - {self.especialidade}"
+    consultas = models.ManyToManyField(
+        'Consulta',
+        through='MedicoConsulta'
+    )
 
 class Paciente(Pessoa):
 
     numero_seguranca_social = models.BigIntegerField(unique=True)
     data_registo = models.DateField(auto_now_add=True)
 
-    def __str__(self):
-
-        return f"{self.nome} - NSS: {self.numero_seguranca_social}"
+    
 
 class Consulta(models.Model):
 
-    medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
-    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)
+    
+    paciente = models.ForeignKey(
+        Paciente, 
+        on_delete=models.CASCADE,
+        related_name='consultas'
+    )
+
     data_hora = models.DateTimeField()
     motivo = models.TextField()
 
-    def __str__(self):
 
-        return f"Consulta de {self.paciente.nome} com Dr. {self.medico.nome} em {self.data_hora}"
-
+class MedicoConsulta(models.Model):  # Middle table for many-to-many
+    field_0 = models.CharField(max_length=50, primary_key=True)
+    medico = models.ForeignKey(Medico, on_delete=models.CASCADE)
+    consulta = models.ForeignKey(Consulta, on_delete=models.CASCADE)
+    role = models.CharField(max_length=50, blank=True)  # e.g., "Primary", "Specialist"
+    
 
 class Receita(models.Model):
 
