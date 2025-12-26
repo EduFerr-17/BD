@@ -4,30 +4,570 @@
 {% block content %}
 <h2>Doctor Dashboard</h2>
 
+<!-- Patient Selection Form -->
+<div class="card patient-selector">
+    <h3>Select Patient</h3>
+    <form method="get" action="{% url 'doctor_dashboard' %}" class="patient-form">
+        <div class="form-group">
+            <label for="patient_cc">Choose a patient:</label>
+            <select name="patient_cc" id="patient_cc" class="form-control">
+                <option value="">-- Select a patient --</option>
+                {% for paciente in pacientes %}
+                    <option value="{{ paciente.cc }}" 
+                            {% if selected_patient and selected_patient.cc == paciente.cc %}selected{% endif %}>
+                        {{ paciente.nome }} (CC: {{ paciente.cc }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Select Patient</button>
+    </form>
+</div>
+
+{% if selected_patient %}
+<!-- Selected Patient Information -->
+<div class="card patient-info">
+    <div class="patient-header">
+        <h3>{{ selected_patient.nome }}</h3>
+        <p class="patient-id">CC: {{ selected_patient.cc }}</p>
+    </div>
+    
+    <div class="patient-details">
+        <div class="detail-item">
+            <strong>Email:</strong> {{ selected_patient.email|default:"Not provided" }}
+        </div>
+        <div class="detail-item">
+            <strong>Phone:</strong> {{ selected_patient.telefone|default:"Not provided" }}
+        </div>
+        <div class="detail-item">
+            <strong>Date of Birth:</strong> {{ selected_patient.data_nascimento|default:"Not provided" }}
+        </div>
+    </div>
+</div>
+
+<!-- Patient Actions -->
+<div class="card patient-actions">
+    <h4>Patient Actions</h4>
+    <div class="action-buttons">
+        <a class="btn secondary" href="{% url 'update_paciente' selected_patient.cc %}">
+            Edit Patient Information
+        </a>
+        <a class="btn primary" href="{% url 'schedule_consulta' %}">
+            Schedule New Consultation
+        </a>
+        <a class="btn success" href="{% url 'create_medicacao' %}">
+            Create New Prescription
+        </a>
+        <a class="btn info" href="{% url 'create_exame' %}">
+            Request New Exam
+        </a>
+        <a class="btn warning" href="{% url 'patient_dashboard' %}?patient_cc={{ selected_patient.cc }}">
+            View Patient Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <h4>Consultations</h4>
+        <p class="stat-number">{{ consultas_count|default:"0" }}</p>
+        <span class="stat-label">Total</span>
+    </div>
+    <div class="stat-card">
+        <h4>Medications</h4>
+        <p class="stat-number">{{ medicacoes_count|default:"0" }}</p>
+        <a href="{% url 'patient_medicacoes' %}?patient_cc={{ selected_patient.cc }}" class="stat-link">View All</a>
+    </div>
+    <div class="stat-card">
+        <h4>Exams</h4>
+        <p class="stat-number">{{ exames_count|default:"0" }}</p>
+        <a href="{% url 'patient_exames' %}?patient_cc={{ selected_patient.cc }}" class="stat-link">View All</a>
+    </div>
+</div>
+
+<!-- Recent Consultations -->
 <section class="card">
-    <h3>Patients</h3>
-
-    <ul class="list">
-        {% for paciente in pacientes %}
-        <li>
-            <strong>{{ paciente }}</strong>
-
-            <div class="button-group">
-                <a class="btn secondary" href="{% url 'update_paciente' paciente.cc %}">
-                    Edit Patient
-                </a>
-                <a class="btn" href="{% url 'schedule_consulta' %}">
-                    New Consulta
-                </a>
-                <a class="btn" href="{% url 'create_exame' %}">
-                    New Exam
-                </a>
-                <a class="btn" href="{% url 'create_medicacao' %}">
-                    New Prescription
-                </a>
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
+    <div class="section-header">
+        <h3>Recent Consultations</h3>
+    </div>
+    
+    {% if recent_consultas %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for consulta in recent_consultas %}
+            <tr>
+                <td>{{ consulta.data_hora|date:"d/m/Y H:i" }}</td>
+                <td>{{ consulta.motivo|truncatechars:50 }}</td>
+                <td>
+                    {% if consulta.concluida %}
+                        <span class="status-badge status-completed">Completed</span>
+                    {% else %}
+                        <span class="status-badge status-pending">Pending</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'consulta_detail' consulta.id %}" class="btn-sm">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="no-data">No consultations found for this patient.</p>
+    {% endif %}
 </section>
+
+{% else %}
+<!-- Initial state when no patient is selected -->
+<div class="card empty-state">
+    <h3>Welcome to Doctor Dashboard</h3>
+    <p>Please select a patient from the dropdown above to access medical records and perform actions.</p>
+    
+    <div class="quick-stats">
+        <h4>Quick Statistics</h4>
+        <div class="stats-overview">
+            <div class="stat-overview">
+                <span class="stat-number-lg">{{ total_patients }}</span>
+                <span class="stat-label">Total Patients</span>
+            </div>
+            <div class="stat-overview">
+                <span class="stat-number-lg">{{ recent_consultas_total }}</span>
+                <span class="stat-label">Consultations Today</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Patients List (only when no patient is selected) -->
+<section class="card">
+    <h3>All Patients</h3>
+    <div class="patients-grid">
+        {% for paciente in pacientes %}
+        <div class="patient-card">
+            <div class="patient-card-header">
+                <h4>{{ paciente.nome }}</h4>
+                <span class="patient-id-small">CC: {{ paciente.cc }}</span>
+            </div>
+            <div class="patient-card-body">
+                <p><small>{{ paciente.email|default:"No email" }}</small></p>
+                <div class="patient-card-actions">
+                    <a href="{% url 'doctor_dashboard' %}?patient_cc={{ paciente.cc }}" 
+                       class="btn-sm primary">Select</a>
+                    <a href="{% url 'update_paciente' paciente.cc %}" 
+                       class="btn-sm secondary">Edit</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="no-data">No patients found.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<style>
+    /* Patient Selection */
+    .patient-selector {
+        margin-bottom: 30px;
+    }
+    
+    .patient-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .form-group {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    /* Patient Information */
+    .patient-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-bottom: 20px;
+    }
+    
+    .patient-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .patient-header h3 {
+        margin: 0;
+        color: white;
+    }
+    
+    .patient-id {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 14px;
+    }
+    
+    .patient-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 8px;
+    }
+    
+    .detail-item {
+        padding: 5px 0;
+    }
+    
+    /* Patient Actions */
+    .patient-actions {
+        margin-bottom: 20px;
+    }
+    
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .action-buttons .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+    }
+    
+    /* Statistics Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card h4 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stat-number {
+        font-size: 36px;
+        font-weight: bold;
+        color: #667eea;
+        margin: 10px 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Section Header */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    /* Data Table */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .data-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    /* Buttons */
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        background-color: #667eea;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-sm:hover {
+        background-color: #5a67d8;
+    }
+    
+    .btn-sm.primary {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .btn-sm.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        margin-top: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .empty-state h3 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+    
+    /* Quick Stats in Empty State */
+    .quick-stats {
+        margin-top: 30px;
+    }
+    
+    .stats-overview {
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        margin-top: 20px;
+    }
+    
+    .stat-overview {
+        text-align: center;
+    }
+    
+    .stat-number-lg {
+        font-size: 48px;
+        font-weight: bold;
+        color: #667eea;
+        display: block;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    /* Patients Grid */
+    .patients-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .patient-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .patient-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .patient-card-header {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .patient-card-header h4 {
+        margin: 0 0 5px 0;
+        color: #333;
+    }
+    
+    .patient-id-small {
+        font-size: 12px;
+        color: #666;
+        background-color: #e9ecef;
+        padding: 2px 8px;
+        border-radius: 10px;
+    }
+    
+    .patient-card-body {
+        padding: 15px;
+    }
+    
+    .patient-card-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    /* No Data Message */
+    .no-data {
+        text-align: center;
+        padding: 30px;
+        color: #6c757d;
+        font-style: italic;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    /* Button Colors */
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        display: inline-block;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+        background-color: #667eea;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #5a67d8;
+    }
+    
+    .btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn.secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn.success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .btn.success:hover {
+        background-color: #218838;
+    }
+    
+    .btn.info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .btn.info:hover {
+        background-color: #138496;
+    }
+    
+    .btn.warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .btn.warning:hover {
+        background-color: #e0a800;
+    }
+
+    .stat-link {
+        display: inline-block;
+        margin-top: 8px;
+        color: #667eea;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .stat-link:hover {
+        text-decoration: underline;
+        color: #5a67d8;
+    }
+</style>
+
+<script>
+// Auto-submit form when patient is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const patientSelect = document.getElementById('patient_cc');
+    
+    if (patientSelect) {
+        patientSelect.addEventListener('change', function() {
+            if (this.value) {
+                this.form.submit();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

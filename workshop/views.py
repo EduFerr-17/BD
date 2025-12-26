@@ -1,3 +1,4 @@
+from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView, UpdateView, TemplateView, CreateView
 from django.views import View
@@ -19,20 +20,49 @@ class HomeView(TemplateView):
 # -------------------------------
 # Patient Views
 # -------------------------------
-class PatientDashboardView(ListView):
-    model = Consulta
+
+
+
+class PatientDashboardView(View):
     template_name = 'patient_dashboard.html'
-    context_object_name = 'consultas'
-
-    def get_queryset(self):
-        return Consulta.objects.all()
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['medicacoes'] = Medicacao.objects.all()
-        context['exames'] = Exames.objects.all()
-        return context
-
+    
+    def get(self, request):
+        # Get all patients for the dropdown
+        pacientes = Paciente.objects.all().order_by('nome')
+        
+        # Get selected patient ID from query parameter
+        patient_cc = request.GET.get('patient_cc')  # Changed from patient_id
+        
+        context = {
+            'pacientes': pacientes,
+            'selected_patient': None,
+            'consultas': [],
+            'medicacoes': [],
+            'exames': []
+        }
+        
+        if patient_cc:
+            # Get the selected patient using cc field
+            try:
+                selected_patient = Paciente.objects.get(cc=patient_cc)
+            except Paciente.DoesNotExist:
+                selected_patient = None
+                # You might want to add an error message here
+            
+            if selected_patient:
+                # Filter data by selected patient
+                consultas = Consulta.objects.filter(paciente=selected_patient)
+                medicacoes = Medicacao.objects.filter(paciente=selected_patient)
+                exames = Exames.objects.filter(paciente=selected_patient)
+                
+                context.update({
+                    'selected_patient': selected_patient,
+                    'consultas': consultas,
+                    'medicacoes': medicacoes,
+                    'exames': exames
+                })
+        
+        return render(request, self.template_name, context)
 
 class PatientConsultaDetailView(DetailView):
     model = Consulta
@@ -59,6 +89,43 @@ class DoctorDashboardView(ListView):
     model = Paciente
     template_name = 'doctor_dashboard.html'
     context_object_name = 'pacientes'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get selected patient from query parameter
+        patient_cc = self.request.GET.get('patient_cc')
+        selected_patient = None
+        
+        if patient_cc:
+            try:
+                selected_patient = Paciente.objects.get(cc=patient_cc)
+                
+                # Get counts for selected patient
+                context['consultas_count'] = Consulta.objects.filter(paciente=selected_patient).count()
+                context['medicacoes_count'] = Medicacao.objects.filter(paciente=selected_patient).count()
+                context['exames_count'] = Exames.objects.filter(paciente=selected_patient).count()
+                
+                # Get recent consultations (last 5)
+                context['recent_consultas'] = Consulta.objects.filter(
+                    paciente=selected_patient
+                ).order_by('-data_hora')[:5]
+                
+            except Paciente.DoesNotExist:
+                pass
+        
+        # Get general statistics for empty state
+        context['total_patients'] = Paciente.objects.count()
+        
+        # Get today's consultations count
+        today = date.today()
+        context['recent_consultas_total'] = Consulta.objects.filter(
+            data_hora__date=today
+        ).count()
+        
+        context['selected_patient'] = selected_patient
+        
+        return context
 
 
 class ScheduleConsultaView(View):

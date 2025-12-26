@@ -4,40 +4,206 @@
 {% block content %}
 <h2>Patient Dashboard</h2>
 
+<!-- Patient Selection Form -->
+<div class="card patient-selector">
+    <h3>Select Patient</h3>
+    <form method="get" action="{% url 'patient_dashboard' %}" class="patient-form">
+        <div class="form-group">
+            <label for="patient_cc">Choose a patient:</label>
+            <select name="patient_cc" id="patient_cc" class="form-control">
+                <option value="">-- Select a patient --</option>
+                {% for paciente in pacientes %}
+                    <option value="{{ paciente.cc }}" 
+                            {% if selected_patient and selected_patient.cc == paciente.cc %}selected{% endif %}>
+                        {{ paciente.nome }} (CC: {{ paciente.cc }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">View Dashboard</button>
+    </form>
+</div>
+
+{% if selected_patient %}
+<!-- Patient Information Header -->
+<div class="card patient-info">
+    <h3>Patient Information</h3>
+    <div class="patient-details">
+        <p><strong>Name:</strong> {{ selected_patient.nome }}</p>
+        <p><strong>Citizen Card (CC):</strong> {{ selected_patient.cc }}</p>
+        <p><strong>Email:</strong> {{ selected_patient.email|default:"Not provided" }}</p>
+        <p><strong>Phone:</strong> {{ selected_patient.telefone|default:"Not provided" }}</p>
+        <p><strong>Date of Birth:</strong> {{ selected_patient.data_nascimento|default:"Not provided" }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- Info Panels (Always visible, showing data based on selection) -->
 <section class="card">
     <h3>Consultations</h3>
     <ul class="list">
-        {% for consulta in consultas %}
-            <li>
-                <a href="{% url 'consulta_detail' consulta.id %}">
-                    {{ consulta.data_hora }} – {{ consulta.motivo }}
-                </a>
-            </li>
-        {% empty %}
-            <li>No consultations found.</li>
-        {% endfor %}
+        {% if selected_patient %}
+            {% for consulta in consultas %}
+                <li>
+                    <a href="{% url 'consulta_detail' consulta.id %}">
+                        {{ consulta.data_hora }} – {{ consulta.motivo }}
+                    </a>
+                </li>
+            {% empty %}
+                <li>No consultations found.</li>
+            {% endfor %}
+        {% else %}
+            <li>Please select a patient to view their consultations.</li>
+        {% endif %}
     </ul>
 </section>
 
 <section class="card">
     <h3>Medications</h3>
     <ul class="list">
-        {% for med in medicacoes %}
-            <li>{{ med }}</li>
-        {% empty %}
-            <li>No medications.</li>
-        {% endfor %}
+        {% if selected_patient %}
+            {% for med in medicacoes %}
+                <li>{{ med }}</li>
+            {% empty %}
+                <li>No medications.</li>
+            {% endfor %}
+        {% else %}
+            <li>Please select a patient to view their medications.</li>
+        {% endif %}
     </ul>
 </section>
 
 <section class="card">
     <h3>Exams</h3>
     <ul class="list">
-        {% for exame in exames %}
-            <li>{{ exame }}</li>
-        {% empty %}
-            <li>No exams.</li>
-        {% endfor %}
+        {% if selected_patient %}
+            {% for exame in exames %}
+                <li>{{ exame }}</li>
+            {% empty %}
+                <li>No exams.</li>
+            {% endfor %}
+        {% else %}
+            <li>Please select a patient to view their exams.</li>
+        {% endif %}
     </ul>
 </section>
+
+<style>
+    .patient-selector {
+        margin-bottom: 30px;
+    }
+    
+    .patient-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .form-group {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    
+    .patient-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        margin-bottom: 20px;
+    }
+    
+    .patient-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+    
+    .card {
+        margin-bottom: 20px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card h3 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+    
+    .list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .list li {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.2s;
+    }
+    
+    .list li:last-child {
+        border-bottom: none;
+    }
+    
+    .list li:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .list a {
+        text-decoration: none;
+        color: #007bff;
+        display: block;
+    }
+    
+    .list a:hover {
+        color: #0056b3;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Message styling for when no patient is selected */
+    .list li:not(a) {
+        color: #6c757d;
+        font-style: italic;
+        text-align: center;
+        padding: 20px;
+    }
+</style>
+
+<script>
+// Optional: Auto-submit form when patient is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const patientSelect = document.getElementById('patient_cc');
+    
+    patientSelect.addEventListener('change', function() {
+        if (this.value) {
+            this.form.submit();
+        }
+    });
+});
+</script>
 {% endblock %}
