@@ -209,7 +209,7 @@ class UpdateMedicacaoView(View):
 # -------------------------------
 # Exames Views
 # -------------------------------
-class CreateExameView(View):
+class CreateExamesView(View):
     template_name = 'create_exames.html'
 
     def get(self, request):

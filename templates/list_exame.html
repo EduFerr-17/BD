@@ -60,19 +60,19 @@
                     {% for exam in exame %}
                     <tr>
                         <td>
-                            <span class="exam-id">{{ exam.id_exame }}</span>
+                            <span class="exam-id_exame">{{ exam.id_exame }}</span>
                         </td>
                         <td>
                             <strong>{{ exam.nome }}</strong>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{% url 'update_exame' exam.id %}" 
+                                <a href="{% url 'update_exame' exam.id_exame %}" 
                                    class="btn-action btn-edit">
                                     Edit
                                 </a>
                                 <button class="btn-action btn-delete" 
-                                        onclick="confirmDelete('{{ exam.id }}', '{{ exam.nome }}')">
+                                        onclick="confirmDelete('{{ exam.id_exame }}', '{{ exam.nome }}')">
                                     Delete
                                 </button>
                             </div>
