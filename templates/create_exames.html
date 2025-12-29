@@ -1,105 +1,322 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Criar Prescrição de Exames</title>
-    <style>
-        .formset-form {
-            border: 1px solid #ddd;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        .delete-checkbox {
-            margin-top: 10px;
-        }
-        .add-form-btn {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .submit-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>Criar Nova Prescrição de Exames</h1>
-    
-    <form method="post">
-        {% csrf_token %}
-        
-        <h2>Informação da Prescrição</h2>
-        {{ form.as_p }}
-        
-        <h2>Exames</h2>
-        {{ formset.management_form }}
-        
-        <div id="formset-container">
-            {% for form in formset %}
-                <div class="formset-form">
-                    {{ form.as_p }}
-                </div>
-            {% endfor %}
-        </div>
-        
-        <button type="button" class="add-form-btn" id="add-form">
-            + Adicionar Exame
-        </button>
-        
-        <br>
-        <button type="submit" class="submit-btn">Criar Prescrição</button>
-        <a href="{% url 'doctor_dashboard' %}">Cancelar</a>
-    </form>
+{% extends 'base.html' %}
+{% block title %}Create Exam Prescription{% endblock %}
 
-    <script>
-        // Dynamic formset addition
-        document.getElementById('add-form').addEventListener('click', function() {
-            const formsetContainer = document.getElementById('formset-container');
-            const totalForms = document.getElementById('id_itemexames_set-TOTAL_FORMS');
-            const currentFormCount = parseInt(totalForms.value);
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>Criar Nova Prescrição de Exames</h1>
+        <p>Registar uma nova prescrição de exames para um paciente</p>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
             
-            // Get the last form
-            const lastForm = formsetContainer.lastElementChild;
+            {% if form.errors or formset.errors %}
+            <div class="alert-error">
+                <h4>Please correct the errors below:</h4>
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                    
+                    {% for formset_form in formset %}
+                        {% for field in formset_form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }} (Exame {{ forloop.parentloop.counter }}):</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in formset_form.non_field_errors %}
+                            <li>Exame {{ forloop.counter }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in formset.non_form_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             
-            // Clone it
-            const newForm = lastForm.cloneNode(true);
+            <h2>Informação da Prescrição</h2>
             
-            // Update form index in all fields
-            const formRegex = RegExp(`itemexames_set-(\\d+)-`, 'g');
-            newForm.innerHTML = newForm.innerHTML.replace(
-                formRegex, 
-                `itemexames_set-${currentFormCount}-`
-            );
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                <span class="form-text">{{ field.help_text }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <h2 style="margin-top: 40px; margin-bottom: 20px;">Exames</h2>
             
-            // Clear values in cloned form
-            newForm.querySelectorAll('input, select, textarea').forEach(field => {
-                if (field.type === 'checkbox') {
-                    field.checked = false;
-                } else if (!field.name.includes('TOTAL_FORMS') && 
-                           !field.name.includes('INITIAL_FORMS') && 
-                           !field.name.includes('MIN_NUM_FORMS') && 
-                           !field.name.includes('MAX_NUM_FORMS')) {
-                    field.value = '';
+            {{ formset.management_form }}
+            
+            <div id="formset-container">
+                {% for formset_form in formset %}
+                    <div class="formset-form">
+                        <h3 style="margin-bottom: 15px; color: #555;">Exame {{ forloop.counter }}</h3>
+                        
+                        {% for field in formset_form %}
+                            {% if not field.is_hidden and field.name != 'DELETE' %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                <span class="form-text">{{ field.help_text }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if formset_form.instance.pk %}
+                        <div class="delete-checkbox">
+                            {{ formset_form.DELETE.label_tag }}
+                            {{ formset_form.DELETE }}
+                            <span style="margin-left: 5px;">Eliminar este exame</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% for hidden in formset_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <button type="button" class="btn btn-secondary" id="add-form">
+                + Adicionar Exame
+            </button>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Criar Prescrição</button>
+                <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header h1 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        color: #666;
+    }
+
+    .card {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #4CAF50;
+    }
+
+    .form-text {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .alert-error {
+        background: #ffebee;
+        color: #c62828;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        border-left: 4px solid #c62828;
+    }
+
+    .alert-error h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .alert-error ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .alert-error li {
+        margin-bottom: 5px;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        transition: background-color 0.3s;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #45a049;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #5a6268;
+    }
+
+    /* Formset specific styles */
+    .formset-form {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        background: #f9f9f9;
+    }
+
+    .delete-checkbox {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed #ddd;
+    }
+
+    .delete-checkbox label {
+        display: inline;
+        font-weight: normal;
+        margin-right: 10px;
+    }
+
+    #add-form {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        background: #6c757d;
+    }
+
+    #add-form:hover {
+        background: #5a6268;
+    }
+</style>
+
+<script>
+    // Dynamic formset addition
+    document.getElementById('add-form').addEventListener('click', function() {
+        const formsetContainer = document.getElementById('formset-container');
+        const totalForms = document.getElementById('id_itemexames_set-TOTAL_FORMS');
+        const currentFormCount = parseInt(totalForms.value);
+        
+        // Get the last form
+        const lastForm = formsetContainer.lastElementChild;
+        
+        // Clone it
+        const newForm = lastForm.cloneNode(true);
+        
+        // Update form index in all fields
+        const formRegex = RegExp(`itemexames_set-(\\d+)-`, 'g');
+        newForm.innerHTML = newForm.innerHTML.replace(
+            formRegex, 
+            `itemexames_set-${currentFormCount}-`
+        );
+        
+        // Update the heading
+        const heading = newForm.querySelector('h3');
+        if (heading) {
+            heading.textContent = `Exame ${currentFormCount + 1}`;
+        }
+        
+        // Clear values in cloned form
+        newForm.querySelectorAll('input, select, textarea').forEach(field => {
+            if (field.type === 'checkbox') {
+                field.checked = false;
+                // Hide DELETE checkbox for new forms
+                if (field.name.includes('DELETE')) {
+                    field.closest('.delete-checkbox').style.display = 'none';
                 }
-            });
-            
-            // Append to container
-            formsetContainer.appendChild(newForm);
-            
-            // Increment total forms count
-            totalForms.value = currentFormCount + 1;
+            } else if (!field.name.includes('TOTAL_FORMS') && 
+                       !field.name.includes('INITIAL_FORMS') && 
+                       !field.name.includes('MIN_NUM_FORMS') && 
+                       !field.name.includes('MAX_NUM_FORMS')) {
+                field.value = '';
+            }
         });
-    </script>
-</body>
-</html>
+        
+        // Append to container
+        formsetContainer.appendChild(newForm);
+        
+        // Increment total forms count
+        totalForms.value = currentFormCount + 1;
+    });
+
+    // Hide DELETE checkboxes for new forms on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteCheckboxes = document.querySelectorAll('input[name$="-DELETE"]');
+        deleteCheckboxes.forEach(function(checkbox) {
+            if (!checkbox.value) {  // New form (no instance pk)
+                checkbox.closest('.delete-checkbox').style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

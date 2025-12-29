@@ -171,6 +171,7 @@ class ItemExames(models.Model):
     exame = models.ForeignKey(Exame, on_delete=models.CASCADE)
     exames = models.ForeignKey(Exames, on_delete=models.CASCADE)
     resultados = models.TextField(blank=True)
+    imagem = models.ImageField(upload_to='ImagemExames/', blank=True,null=True)
 
     class Meta:
         verbose_name = 'Item de Exame'
