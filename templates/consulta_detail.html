@@ -9,6 +9,19 @@
     <p><strong>Reason:</strong> {{ object.motivo }}</p>
     <p><strong>Patient:</strong> {{ object.paciente }}</p>
 
-    <a class="btn secondary" href="{% url 'patient_dashboard' %}">Back</a>
-</div>
+<a class="btn secondary" href="#" 
+   onclick="window.history.back(); return false;"
+   data-fallback-url="{% url 'patient_dashboard' %}">Back</a>
+
+<script>
+document.querySelector('.btn.secondary').addEventListener('click', function(e) {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        // Fallback to default URL if no history
+        window.location.href = this.dataset.fallbackUrl;
+    }
+    e.preventDefault();
+});
+</script></div>
 {% endblock %}

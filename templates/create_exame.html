@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
-{% block title %}Create Exam{% endblock %}
+{% block title %}Create Exam Prescription{% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="header">
-        <h1>Create New Exam</h1>
-        <p>Add a new exam type to the system</p>
+        <h1>Criar Nova Prescrição de Exames</h1>
+        <p>Registar uma nova prescrição de exames para um paciente</p>
     </div>
 
     <div class="card">
-        <form method="post" class="exam-form">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             
-            {% if form.errors %}
+            {% if form.errors or formset.errors %}
             <div class="alert-error">
                 <h4>Please correct the errors below:</h4>
                 <ul>
@@ -24,33 +24,80 @@
                     {% for error in form.non_field_errors %}
                         <li>{{ error }}</li>
                     {% endfor %}
+                    
+                    {% for formset_form in formset %}
+                        {% for field in formset_form %}
+                            {% for error in field.errors %}
+                                <li><strong>{{ field.label }} (Exame {{ forloop.parentloop.counter }}):</strong> {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in formset_form.non_field_errors %}
+                            <li>Exame {{ forloop.counter }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in formset.non_form_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
                 </ul>
             </div>
             {% endif %}
             
+            <h2>Informação da Prescrição</h2>
+            
+            {% for field in form %}
             <div class="form-group">
-                <label for="{{ form.id_exame.id_for_label }}">Exam ID *</label>
-                {{ form.id_exame }}
-                <small class="form-text">Unique identifier for the exam (e.g., EX-001, LAB-01)</small>
+                {{ field.label_tag }}
+                {{ field }}
+                {% if field.help_text %}
+                <span class="form-text">{{ field.help_text }}</span>
+                {% endif %}
             </div>
-
-            <div class="form-group">
-                <label for="{{ form.nome.id_for_label }}">Exam Name *</label>
-                {{ form.nome }}
-                <small class="form-text">Enter the name of the exam (e.g., Blood Test, X-Ray, MRI)</small>
+            {% endfor %}
+            
+            <div id="formset-container">
+                {% for formset_form in formset %}
+                    <div class="formset-form">
+                        <h3 style="margin-bottom: 15px; color: #555;">Exame {{ forloop.counter }}</h3>
+                        
+                        {% for field in formset_form %}
+                            {% if not field.is_hidden and field.name != 'DELETE' %}
+                            <div class="form-group">
+                                {{ field.label_tag }}
+                                {{ field }}
+                                {% if field.help_text %}
+                                <span class="form-text">{{ field.help_text }}</span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if formset_form.instance.pk %}
+                        <div class="delete-checkbox">
+                            {{ formset_form.DELETE.label_tag }}
+                            {{ formset_form.DELETE }}
+                            <span style="margin-left: 5px;">Eliminar este exame</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% for hidden in formset_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
             </div>
-
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Save Exam</button>
-                <a href="{% url 'list_exame' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Criar Prescrição</button>
+                <a href="{% url 'doctor_dashboard' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
 
+<!--style in general-->
+
 <style>
     .container {
-        max-width: 500px;
+        max-width: 800px;
         margin: 40px auto;
         padding: 20px;
     }
@@ -153,6 +200,7 @@
         font-size: 16px;
         text-decoration: none;
         transition: background-color 0.3s;
+        display: inline-block;
     }
 
     .btn-primary {
@@ -173,38 +221,145 @@
         background: #5a6268;
     }
 
-    @media (max-width: 768px) {
-        .container {
-            padding: 15px;
-        }
-        
-        .form-actions {
-            flex-direction: column;
-        }
-        
-        .btn {
-            width: 100%;
-        }
+    .formset-form {
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        background: #f9f9f9;
+    }
+
+    .delete-checkbox {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed #ddd;
+    }
+
+    .delete-checkbox label {
+        display: inline;
+        font-weight: normal;
+        margin-right: 10px;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .file-input {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-input-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .file-input-label:hover {
+        background: #e9ecef;
+        border-color: #4CAF50;
+    }
+
+    .upload-icon {
+        font-size: 24px;
+        margin-right: 10px;
+    }
+
+    .upload-text {
+        font-size: 16px;
+        color: #495057;
+    }
+
+    .image-preview-container {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 10px;
+    }
+
+    .btn-remove-image {
+        padding: 8px 16px;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-remove-image:hover {
+        background: #c82333;
+    }
+
+    .file-name {
+        margin-top: 10px;
+        color: #666;
+        font-size: 14px;
+        font-style: italic;
     }
 </style>
 
 <script>
-    // Auto-format exam ID to uppercase
+
+    // Hide DELETE checkboxes for new forms on page load
     document.addEventListener('DOMContentLoaded', function() {
-        const idField = document.getElementById('id_id_exame');
-        if (idField) {
-            idField.addEventListener('blur', function() {
-                this.value = this.value.toUpperCase();
-            });
-        }
-        
-        // Auto-capitalize exam names
-        const nomeField = document.getElementById('id_nome');
-        if (nomeField) {
-            nomeField.addEventListener('blur', function() {
-                this.value = this.value.charAt(0).toUpperCase() + this.value.slice(1);
-            });
-        }
+        const deleteCheckboxes = document.querySelectorAll('input[name$="-DELETE"]');
+        deleteCheckboxes.forEach(function(checkbox) {
+            if (!checkbox.value) {  // New form (no instance pk)
+                checkbox.closest('.delete-checkbox').style.display = 'none';
+            }
+        });
     });
+
+    // CHANGE 4: Image preview functionality
+    function previewImage(event) {
+        const input = event.target;
+        const file = input.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const previewContainer = document.getElementById('image-preview-container');
+                const previewImage = document.getElementById('image-preview');
+                const fileNameDisplay = document.getElementById('file-name');
+                
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                fileNameDisplay.textContent = `Ficheiro selecionado: ${file.name}`;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    // CHANGE 5: Function to remove selected image
+    function removeImage() {
+        const fileInput = document.getElementById('image_upload');
+        const previewContainer = document.getElementById('image-preview-container');
+        const fileNameDisplay = document.getElementById('file-name');
+        
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        fileNameDisplay.textContent = '';
+    }
 </script>
 {% endblock %}

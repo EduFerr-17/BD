@@ -1,6 +1,6 @@
 from datetime import date
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView, DetailView, UpdateView, TemplateView, CreateView
+from django.views.generic import ListView, DetailView, UpdateView, TemplateView, CreateView, DeleteView
 from django.views import View
 from django.urls import reverse_lazy
 from .models import Paciente, Medico, Consulta, Medicacao, ItemMedicacao, Exames, ItemExames, Medicamento, Exame
@@ -276,6 +276,17 @@ class UpdateExameResultsView(UpdateView):
     success_url = reverse_lazy('doctor_dashboard')
     context_object_name = 'item_exame'
 
+class ExamesDetailView(DetailView):
+    model = Exames
+    template_name = 'exames_detail.html'
+    context_object_name = 'exame'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get all exam items for this Exames instance
+        exam_items = ItemExames.objects.filter(exames=self.object)
+        context['exam_items'] = exam_items
+        return context
 
 # -------------------------------
 # Update Consulta

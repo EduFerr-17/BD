@@ -3,14 +3,11 @@
 
 {% block content %}
 <div class="card">
-    <h2>My Exams</h2>
+    <h2>Exam Details</h2>
 
-    <ul class="list">
-        {% for exame in exames %}
-            <li>{{ exame }}</li>
-        {% empty %}
-            <li>No exams available.</li>
-        {% endfor %}
-    </ul>
+    <p><strong>Date:</strong> {{ object.data_hora }}</p>
+    <p><strong>Reason:</strong> {{ object.motivo }}</p>
+    <p><strong>Patient:</strong> {{ object.paciente }}</p>
+
 </div>
 {% endblock %}

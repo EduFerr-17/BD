@@ -15,7 +15,6 @@ urlpatterns = [
     path('consulta/<int:pk>/', views.PatientConsultaDetailView.as_view(), name='consulta_detail'),
     path('medicacoes/', views.PatientMedicacaoListView.as_view(), name='patient_medicacoes'),
     path('exames/', views.PatientExamesListView.as_view(), name='patient_exames'),
-
     # -------------------------------
     # Doctor
     # -------------------------------
@@ -29,6 +28,11 @@ urlpatterns = [
 
     path('medicacao/new/', views.CreateMedicacaoView.as_view(), name='create_medicacao'),
     path('medicacao/<int:pk>/edit/', views.UpdateMedicacaoView.as_view(), name='update_medicacao'),
+
+    #--------------------------------
+    #Exams
+    #--------------------------------
+    path('exames/detail/<int:pk>/', views.ExamesDetailView.as_view(), name='exames_detail'),
 
     # -------------------------------
     # Administration

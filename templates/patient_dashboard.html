@@ -78,7 +78,12 @@
     <ul class="list">
         {% if selected_patient %}
             {% for exame in exames %}
-                <li>{{ exame }}</li>
+                <li>
+                    <a href="{% url 'exames_detail' exame.id_receita %}">
+                        Exam #{{ exame.id_receita }} - {{ exame.date }} 
+                        ({{ exame.exames.count }} exam{{ exame.exames.count|pluralize }})
+                    </a>
+                </li>
             {% empty %}
                 <li>No exams.</li>
             {% endfor %}
@@ -87,6 +92,7 @@
         {% endif %}
     </ul>
 </section>
+
 
 <style>
     .patient-selector {
