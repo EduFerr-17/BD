@@ -62,8 +62,13 @@
     <h3>Medications</h3>
     <ul class="list">
         {% if selected_patient %}
-            {% for med in medicacoes %}
-                <li>{{ med }}</li>
+            {% for med in medicacoes|dictsortreversed:"id_receita"%}
+                <li>
+                    <a href="{% url 'medicacao_detail' med.id_receita %}">
+                        Prescription #{{ med.id_receita }} - {{ med.date }} 
+                        ({{ med.medicamentos.count }} medication{{ med.medicamentos.count|pluralize }})
+                    </a>
+                </li>
             {% empty %}
                 <li>No medications.</li>
             {% endfor %}
@@ -80,7 +85,7 @@
             {% for exame in exames|dictsortreversed:"id_receita" %}
                 <li>
                     <a href="{% url 'exames_detail' exame.id_receita %}">
-                        Exam #{{ exame.id_receita }} - {{ exame.date }} 
+                        Prescription #{{ exame.id_receita }} - {{ exame.date }} 
                         ({{ exame.exames.count }} exam{{ exame.exames.count|pluralize }})
                     </a>
                 </li>

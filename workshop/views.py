@@ -205,7 +205,16 @@ class UpdateMedicacaoView(View):
             'medicacao': medicacao
         })
 
-
+class MedicacaoDetailView(DetailView):
+    model = Medicacao
+    template_name = 'medicacao_detail.html'
+    context_object_name = 'medicacao'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        med_items = ItemMedicacao.objects.filter(medicacao=self.object)
+        context['med_items'] = med_items
+        return context
 # -------------------------------
 # Exames Views
 # -------------------------------
@@ -283,7 +292,6 @@ class ExamesDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Get all exam items for this Exames instance
         exam_items = ItemExames.objects.filter(exames=self.object)
         context['exam_items'] = exam_items
         return context

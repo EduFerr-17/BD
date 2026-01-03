@@ -34,6 +34,13 @@ urlpatterns = [
     #--------------------------------
     path('exames/detail/<int:pk>/', views.ExamesDetailView.as_view(), name='exames_detail'),
 
+    #--------------------------------
+    #medications
+    #--------------------------------
+
+    path('medicacao/detail/<int:pk>/', views.MedicacaoDetailView.as_view(), name='medicacao_detail'),
+
+
     # -------------------------------
     # Administration
     # -------------------------------

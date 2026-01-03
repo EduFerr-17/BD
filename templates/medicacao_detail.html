@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Medication Details - #{{ medicacao.id_receita }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Medication Details</h2>
+    
+    <div class="medication-header">
+        <p><strong>Medication ID:</strong> #{{ medicacao.id_receita }}</p>
+        <p><strong>Patient:</strong> {{ medicacao.paciente.nome }} (CC: {{ medicacao.paciente.cc }})</p>
+        <p><strong>Date:</strong> {{ medicacao.date }}</p>
+        <p><strong>Total Medications:</strong> {{ med_items|length }}</p>
+    </div>
+    
+    <hr>
+    
+    <h3>Medication Items</h3>
+    {% if med_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Medication Name</th>
+                    <th>Dose</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in med_items %}
+                <tr>
+                    <td>{{ item.medicamento.nome }}</td>
+                    <td>{{ item.dose|default:"Not specified" }}</td>
+                    <td>{{ item.quantidade }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No medication items found.</p>
+    {% endif %}
+    
+    <div class="actions">
+        <a href="{% url 'patient_dashboard' %}?patient_cc={{ medicacao.paciente.cc }}" class="btn btn-secondary">
+            Back to Patient Dashboard
+        </a>
+        
+        {% if user.is_staff or user.is_superuser %}
+            <a href="{% url 'update_medicacao' medicacao.id_receita %}" class="btn btn-primary">
+                Edit Medication
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .medication-header {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+    
+    .medication-header p {
+        margin: 5px 0;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    
+    .table tr:hover {
+        background-color: #f5f5f5;
+    }
+    
+    .actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
