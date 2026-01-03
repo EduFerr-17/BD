@@ -113,11 +113,6 @@ class ExamesForm(ModelForm):
 
 
 class ItemExamesForm(forms.ModelForm):
-    image = forms.ImageField(
-        required=False, #permite adicionar sem imagem
-        label="Upload de Imagem", #label
-        help_text="Adicionar imagem" #formatos
-    )
     class Meta:
         model = ItemExames
         fields = ('exame', 'resultados','imagem')

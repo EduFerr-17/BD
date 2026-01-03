@@ -222,7 +222,7 @@ class CreateExamesView(View):
 
     def post(self, request):
         form = ExamesForm(request.POST)
-        formset = ItemExamesFormSet(request.POST)
+        formset = ItemExamesFormSet(request.POST,request.FILES)
         
         if form.is_valid() and formset.is_valid():
             exames = form.save()
@@ -255,7 +255,7 @@ class UpdateExameView(View):
     def post(self, request, pk):
         exame_obj = get_object_or_404(Exames, pk=pk)
         form = ExamesForm(request.POST, instance=exame_obj)
-        formset = ItemExamesFormSet(request.POST, instance=exame_obj)
+        formset = ItemExamesFormSet(request.POST, request.FILES, instance=exame_obj)
         
         if form.is_valid() and formset.is_valid():
             form.save()

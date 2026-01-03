@@ -77,7 +77,7 @@
     <h3>Exams</h3>
     <ul class="list">
         {% if selected_patient %}
-            {% for exame in exames %}
+            {% for exame in exames|dictsortreversed:"id_receita" %}
                 <li>
                     <a href="{% url 'exames_detail' exame.id_receita %}">
                         Exam #{{ exame.id_receita }} - {{ exame.date }} 
